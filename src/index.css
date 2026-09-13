@@ -1,0 +1,165 @@
+@import "tailwindcss";
+
+@theme {
+  --color-zinc-950: #0a0a0a;
+  --color-zinc-900: #0a0a0a;
+  --color-zinc-800: #171717;
+  --color-border: #171717;
+  --radius-xs: 6px;
+  --radius-sm: 6px;
+  --radius-md: 6px;
+  --radius-lg: 6px;
+  --radius-xl: 6px;
+  --radius-2xl: 6px;
+  --radius-3xl: 6px;
+}
+
+/* Theme Variables */
+:root,
+[data-theme="deep-black"],
+.theme-deep-black {
+  --bg-app: #0a0a0a;
+  --bg-surface: #0a0a0a;
+  --bg-sidebar: #0a0a0a;
+  --bg-card: #0d0d0d;
+  --bg-item: #111111;
+  --bg-hover: #151515;
+  --bg-active-pill: #1c1c1c;
+  --bg-input: #060606;
+  --border-subtle: #171717;
+  --border-card: #141414;
+  --border-hover: #262626;
+  --controls-bg: #0a0a0a;
+  --controls-border: #141414;
+  --controls-hover: #151515;
+}
+
+[data-theme="dark-gray"],
+.theme-dark-gray {
+  --bg-app: #18181b;
+  --bg-surface: #1e1e24;
+  --bg-sidebar: #1e1e24;
+  --bg-card: #23232a;
+  --bg-item: #282830;
+  --bg-hover: #2f2f38;
+  --bg-active-pill: #373742;
+  --bg-input: #1a1a20;
+  --border-subtle: #2f2f38;
+  --border-card: #33333d;
+  --border-hover: #484855;
+  --controls-bg: #23232a;
+  --controls-border: #33333d;
+  --controls-hover: #2f2f38;
+}
+
+/* Global 6px Border Radius for All Elements and Components */
+button,
+input,
+select,
+textarea,
+table,
+thead,
+tbody,
+tr,
+th,
+td,
+pre,
+code,
+.rounded,
+.rounded-sm,
+.rounded-md,
+.rounded-lg,
+.rounded-xl,
+.rounded-2xl,
+.rounded-3xl,
+[class*="rounded-"] {
+  border-radius: 6px !important;
+}
+
+/* Exceptions: Preserve circular indicators/dots */
+.rounded-full {
+  border-radius: 9999px !important;
+}
+
+/* Dynamic theme background and borders */
+html,
+body,
+#root {
+  background-color: var(--bg-app);
+  color: #f4f4f5;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+[data-theme="dark-gray"] .bg-\[\#0a0a0a\],
+[data-theme="dark-gray"] [style*="background-color: rgb(10, 10, 10)"],
+[data-theme="dark-gray"] [style*="background-color: #0a0a0a"] {
+  background-color: var(--bg-app) !important;
+}
+
+[data-theme="dark-gray"] .bg-\[\#121212\],
+[data-theme="dark-gray"] [style*="background-color: rgb(18, 18, 18)"],
+[data-theme="dark-gray"] [style*="background-color: #121212"] {
+  background-color: var(--bg-card) !important;
+}
+
+[data-theme="dark-gray"] .bg-\[\#151515\],
+[data-theme="dark-gray"] [style*="background-color: rgb(21, 21, 21)"],
+[data-theme="dark-gray"] [style*="background-color: #151515"] {
+  background-color: var(--bg-hover) !important;
+}
+
+[data-theme="dark-gray"] .bg-\[\#111111\],
+[data-theme="dark-gray"] [style*="background-color: #111111"] {
+  background-color: var(--bg-item) !important;
+}
+
+[data-theme="dark-gray"] .border-\[\#171717\],
+[data-theme="dark-gray"] .border-\[\#141414\],
+[data-theme="dark-gray"] [style*="border-color: #171717"],
+[data-theme="dark-gray"] [style*="border-color: #141414"] {
+  border-color: var(--border-subtle) !important;
+}
+
+[data-theme="dark-gray"] .bg-zinc-950 {
+  background-color: var(--bg-input) !important;
+}
+
+[data-theme="dark-gray"] .bg-zinc-900 {
+  background-color: var(--bg-card) !important;
+}
+
+[data-theme="dark-gray"] .border-zinc-800 {
+  border-color: var(--border-subtle) !important;
+}
+
+/* React Flow Visual Canvas Controls (Zoom In, Zoom Out, Fit View, Lock/Interactive) */
+.react-flow__controls {
+  background-color: var(--controls-bg) !important;
+  border: 1px solid var(--controls-border) !important;
+  border-radius: 6px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6) !important;
+  transition: background-color 0.2s ease, border-color 0.2s ease !important;
+}
+
+.react-flow__controls-button {
+  background-color: var(--controls-bg) !important;
+  border-bottom: 1px solid var(--controls-border) !important;
+  color: #a1a1aa !important;
+  fill: #a1a1aa !important;
+  transition: all 0.15s ease !important;
+}
+
+.react-flow__controls-button:last-child {
+  border-bottom: none !important;
+}
+
+.react-flow__controls-button:hover {
+  background-color: var(--controls-hover) !important;
+  color: #f4f4f5 !important;
+  fill: #f4f4f5 !important;
+}
+
+.react-flow__controls-button svg {
+  fill: currentColor !important;
+}

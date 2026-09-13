@@ -1,0 +1,6 @@
+{
+  "name": "FluxFlow — Workflow Engine SaaS",
+  "description": "Plataforma SaaS de automação visual no-code/low-code com editor de nós interativo, triggers, runners em sandbox, proteção SSRF, interpolação e histórico de execuções.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
