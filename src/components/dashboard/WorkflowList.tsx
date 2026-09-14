@@ -21,9 +21,11 @@ import {
 } from 'lucide-react';
 import { Workflow } from '../../engine/types';
 import { CustomSelect } from '../ui/CustomSelect';
+import { Skeleton } from '../ui/Skeleton';
 
 interface WorkflowListProps {
   workflows: Workflow[];
+  isLoading?: boolean;
   onSelectWorkflow: (workflowId: string) => void;
   onCreateNew: () => void;
   onOpenTemplates: () => void;
@@ -34,6 +36,7 @@ interface WorkflowListProps {
 
 export const WorkflowList: React.FC<WorkflowListProps> = ({
   workflows,
+  isLoading,
   onSelectWorkflow,
   onCreateNew,
   onOpenTemplates,
@@ -161,7 +164,42 @@ export const WorkflowList: React.FC<WorkflowListProps> = ({
       </div>
 
       {/* Grid of Workflows */}
-      {filteredWorkflows.length === 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              style={{ backgroundColor: '#0a0a0a' }}
+              className="rounded-xl border border-[#171717] p-4 flex flex-col justify-between space-y-4"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="w-7 h-3.5 rounded-full" />
+                    <Skeleton className="w-12 h-3" />
+                  </div>
+                  <Skeleton className="w-16 h-4 rounded-md" />
+                </div>
+                <Skeleton className="h-4 w-3/4 mb-2" />
+                <Skeleton className="h-3 w-full mb-1" />
+                <Skeleton className="h-3 w-5/6" />
+                <div className="flex gap-2 mt-4">
+                  <Skeleton className="w-16 h-4 rounded-md" />
+                  <Skeleton className="w-12 h-4 rounded-md" />
+                </div>
+              </div>
+              <div className="pt-3 border-t border-[#171717] flex items-center justify-between">
+                <Skeleton className="w-24 h-3" />
+                <div className="flex gap-2">
+                  <Skeleton className="w-6 h-6 rounded-md" />
+                  <Skeleton className="w-6 h-6 rounded-md" />
+                  <Skeleton className="w-16 h-6 rounded-md" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : filteredWorkflows.length === 0 ? (
         <div
           style={{ backgroundColor: '#0a0a0a' }}
           className="text-center py-16 rounded-2xl border border-dashed border-zinc-800 p-8"

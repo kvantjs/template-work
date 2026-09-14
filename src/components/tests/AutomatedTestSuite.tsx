@@ -29,6 +29,7 @@ import { interpolateString } from '../../engine/interpolator';
 import { sortNodesTopologically } from '../../engine/topologicalSort';
 import { executeWorkflow } from '../../engine/engine';
 import { Workflow } from '../../engine/types';
+import { Skeleton } from '../ui/Skeleton';
 
 interface TestResult {
   id: string;
@@ -39,7 +40,11 @@ interface TestResult {
   durationMs?: number;
 }
 
-export const AutomatedTestSuite: React.FC = () => {
+interface AutomatedTestSuiteProps {
+  isLoading?: boolean;
+}
+
+export const AutomatedTestSuite: React.FC<AutomatedTestSuiteProps> = ({ isLoading }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<TestResult[]>([
     {
@@ -524,32 +529,64 @@ export const AutomatedTestSuite: React.FC = () => {
 
       {/* Summary Scoreboard */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div
-          style={{ backgroundColor: '#0a0a0a' }}
-          className="p-3.5 rounded-xl border border-[#171717] shadow-sm"
-        >
-          <div className="text-[11px] text-zinc-400 font-medium">Total de Testes</div>
-          <div className="text-xl font-semibold text-zinc-100 mt-0.5 tracking-tight">{results.length}</div>
-        </div>
-        <div
-          style={{ backgroundColor: '#0a0a0a' }}
-          className="p-3.5 rounded-xl border border-emerald-900/30 shadow-sm"
-        >
-          <div className="text-[11px] text-emerald-400 font-medium">Aprovados (Pass)</div>
-          <div className="text-xl font-semibold text-emerald-400 mt-0.5 tracking-tight">{passCount}</div>
-        </div>
-        <div
-          style={{ backgroundColor: '#0a0a0a' }}
-          className="p-3.5 rounded-xl border border-red-900/30 shadow-sm"
-        >
-          <div className="text-[11px] text-red-400 font-medium">Reprovados (Fail)</div>
-          <div className="text-xl font-semibold text-red-400 mt-0.5 tracking-tight">{failCount}</div>
-        </div>
+        {isLoading ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={i}
+              style={{ backgroundColor: '#0a0a0a' }}
+              className="p-3.5 rounded-xl border border-[#171717] space-y-2 shadow-sm"
+            >
+              <Skeleton className="w-24 h-3" />
+              <Skeleton className="w-12 h-6" />
+            </div>
+          ))
+        ) : (
+          <>
+            <div
+              style={{ backgroundColor: '#0a0a0a' }}
+              className="p-3.5 rounded-xl border border-[#171717] shadow-sm"
+            >
+              <div className="text-[11px] text-zinc-400 font-medium">Total de Testes</div>
+              <div className="text-xl font-semibold text-zinc-100 mt-0.5 tracking-tight">{results.length}</div>
+            </div>
+            <div
+              style={{ backgroundColor: '#0a0a0a' }}
+              className="p-3.5 rounded-xl border border-emerald-900/30 shadow-sm"
+            >
+              <div className="text-[11px] text-emerald-400 font-medium">Aprovados (Pass)</div>
+              <div className="text-xl font-semibold text-emerald-400 mt-0.5 tracking-tight">{passCount}</div>
+            </div>
+            <div
+              style={{ backgroundColor: '#0a0a0a' }}
+              className="p-3.5 rounded-xl border border-red-900/30 shadow-sm"
+            >
+              <div className="text-[11px] text-red-400 font-medium">Reprovados (Fail)</div>
+              <div className="text-xl font-semibold text-red-400 mt-0.5 tracking-tight">{failCount}</div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Tests Results List */}
       <div className="space-y-2">
-        {results.map((test) => (
+        {isLoading ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              style={{ backgroundColor: '#0a0a0a' }}
+              className="p-3.5 rounded-xl border border-[#171717] flex items-start justify-between gap-4 shadow-sm"
+            >
+              <div className="space-y-2 flex-1">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="w-16 h-4 rounded-md" />
+                  <Skeleton className="w-48 h-4" />
+                </div>
+                <Skeleton className="w-full h-3" />
+              </div>
+              <Skeleton className="w-20 h-8 rounded-full" />
+            </div>
+          ))
+        ) : results.map((test) => (
           <div
             key={test.id}
             style={{ backgroundColor: '#0a0a0a' }}

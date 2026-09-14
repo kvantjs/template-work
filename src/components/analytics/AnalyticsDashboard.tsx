@@ -23,6 +23,7 @@ import {
   Radio,
 } from 'lucide-react';
 import { WorkflowExecution, Workflow } from '../../engine/types';
+import { Skeleton } from '../ui/Skeleton';
 
 interface AnalyticsDashboardProps {
   workflows: Workflow[];
@@ -42,6 +43,7 @@ interface HealthProbe {
 export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   workflows,
   executions,
+  isLoading,
   onRefresh,
   onSelectWorkflow,
 }) => {
@@ -191,7 +193,27 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
       {/* Top Stat KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {/* KPI 1: Taxa de Sucesso */}
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              style={{ backgroundColor: '#0a0a0a' }}
+              className="p-4 rounded-xl border border-[#171717] shadow-sm space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <Skeleton className="w-24 h-3" />
+                <Skeleton className="w-4 h-4 rounded-full" />
+              </div>
+              <div className="flex items-baseline gap-2">
+                <Skeleton className="w-20 h-7" />
+                <Skeleton className="w-16 h-3" />
+              </div>
+              <Skeleton className="w-full h-1.5 rounded-full" />
+            </div>
+          ))
+        ) : (
+          <>
+            {/* KPI 1: Taxa de Sucesso */}
         <div
           style={{ backgroundColor: '#0a0a0a' }}
           className="p-4 rounded-xl border border-[#171717] shadow-sm space-y-2"
@@ -279,9 +301,11 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             Escuta ativa em Webhook & Cron
           </div>
         </div>
-      </div>
+      </>
+    )}
+  </div>
 
-      {/* Grid: Health Probes & Execution Latency Breakdown */}
+  {/* Grid: Health Probes & Execution Latency Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Left: Health Probes */}
         <div
@@ -299,7 +323,17 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           </div>
 
           <div className="space-y-2.5">
-            {healthProbes.map((probe) => (
+            {isLoading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="p-3 rounded-lg bg-[#0e0e0e] border border-[#171717] space-y-2">
+                  <div className="flex justify-between">
+                    <Skeleton className="w-40 h-3" />
+                    <Skeleton className="w-16 h-3" />
+                  </div>
+                  <Skeleton className="w-full h-3" />
+                </div>
+              ))
+            ) : healthProbes.map((probe) => (
               <div
                 key={probe.service}
                 className="p-3 rounded-lg bg-[#0e0e0e] border border-[#171717] space-y-1.5"

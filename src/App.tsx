@@ -3,7 +3,8 @@
  * Main Application Hub & State Orchestrator
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import {
   Workflow as WorkflowIcon,
   PlayCircle,
@@ -39,16 +40,41 @@ import { ThemeToggle } from './components/ui/ThemeToggle';
 import { executeWorkflow } from './engine/engine';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<AppTab>('workflows');
+  const location = useLocation();
+  const navigate = useNavigate();
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [credentials, setCredentials] = useState<IntegrationCredential[]>([]);
   const [executions, setExecutions] = useState<WorkflowExecution[]>([]);
   const [activeWorkflowId, setActiveWorkflowId] = useState<string | null>(null);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
   const [showOpenApiModal, setShowOpenApiModal] = useState(false);
 
+  const activeTab = useMemo(() => {
+    const path = location.pathname;
+    if (path === '/') return 'workflows';
+    if (path.startsWith('/canvas')) return 'canvas';
+    if (path.startsWith('/executions')) return 'executions';
+    if (path.startsWith('/analytics')) return 'analytics';
+    if (path.startsWith('/credentials')) return 'credentials';
+    if (path.startsWith('/webhooks')) return 'webhook-tester';
+    if (path.startsWith('/tests')) return 'test-suite';
+    return 'workflows';
+  }, [location.pathname]);
+
   // Load data from persistent storage
+  // Trigger skeleton loading on every route change
+  useEffect(() => {
+    setIsInitialLoading(true);
+    const timer = setTimeout(() => {
+      setIsInitialLoading(false);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
+
+  // Initial data load
   useEffect(() => {
     const loadedWorkflows = db.getWorkflows();
     const loadedCreds = db.getCredentials();
@@ -73,7 +99,7 @@ export default function App() {
 
   const handleSelectWorkflow = (workflowId: string) => {
     setActiveWorkflowId(workflowId);
-    setActiveTab('canvas');
+    navigate('/canvas');
   };
 
   const handleCreateNewWorkflow = () => {
@@ -106,7 +132,7 @@ export default function App() {
     db.saveWorkflow(newWf);
     setWorkflows((prev) => [newWf, ...prev]);
     setActiveWorkflowId(newId);
-    setActiveTab('canvas');
+    navigate('/canvas');
   };
 
   const handleSelectTemplate = (templateIndex: number) => {
@@ -132,7 +158,7 @@ export default function App() {
     setWorkflows((prev) => [newWf, ...prev]);
     setActiveWorkflowId(newId);
     setShowTemplatesModal(false);
-    setActiveTab('canvas');
+    navigate('/canvas');
   };
 
   const handleToggleActive = (workflowId: string, currentActive: boolean) => {
@@ -166,7 +192,7 @@ export default function App() {
     if (activeWorkflowId === workflowId) {
       const remaining = workflows.filter((w) => w.id !== workflowId);
       setActiveWorkflowId(remaining[0]?.id || null);
-      if (remaining.length === 0) setActiveTab('workflows');
+      if (remaining.length === 0) navigate('/');
     }
   };
 
@@ -179,7 +205,7 @@ export default function App() {
     }
 
     setActiveWorkflowId(wf.id);
-    setActiveTab('canvas');
+    navigate('/canvas');
 
     try {
       const newExecution = await executeWorkflow(wf, 'MANUAL', execution.triggerPayload || {}, {
@@ -205,7 +231,7 @@ export default function App() {
       updatedAt: new Date().toISOString(),
     };
     handleSaveWorkflow(updated);
-    setActiveTab('canvas');
+    navigate('/canvas');
   };
 
   // Export all data (Workflows, Executions, Credentials metadata, Webhooks)
@@ -232,8 +258,6 @@ export default function App() {
     <div className="flex h-screen w-screen bg-[#0a0a0a] text-zinc-100 overflow-hidden select-none font-sans">
       {/* Left Navigation Sidebar */}
       <Sidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
         workflows={workflows}
         activeWorkflow={activeWorkflow}
         onSelectWorkflow={handleSelectWorkflow}
@@ -317,92 +341,114 @@ export default function App() {
 
         {/* Main Content Viewport */}
         <main className="flex-1 overflow-hidden relative bg-[#0a0a0a]">
-          {/* 1. Workflows List */}
-          {activeTab === 'workflows' && (
-            <div style={{ backgroundColor: '#0a0a0a' }} className="h-full overflow-y-auto">
-              <WorkflowList
-                workflows={workflows}
-                onSelectWorkflow={handleSelectWorkflow}
-                onCreateNew={handleCreateNewWorkflow}
-                onOpenTemplates={() => setShowTemplatesModal(true)}
-                onToggleActive={handleToggleActive}
-                onDuplicate={handleDuplicateWorkflow}
-                onDelete={handleDeleteWorkflow}
-              />
-            </div>
-          )}
-
-          {/* 2. Visual Canvas Editor */}
-          {activeTab === 'canvas' && activeWorkflow && (
-            <WorkflowCanvas
-              key={activeWorkflow.id}
-              workflow={activeWorkflow}
-              credentials={credentials}
-              onSaveWorkflow={handleSaveWorkflow}
-              onExecutionComplete={() => setExecutions(db.getExecutions())}
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <div style={{ backgroundColor: '#0a0a0a' }} className="h-full overflow-y-auto">
+                  <WorkflowList
+                    workflows={workflows}
+                    isLoading={isInitialLoading}
+                    onSelectWorkflow={handleSelectWorkflow}
+                    onCreateNew={handleCreateNewWorkflow}
+                    onOpenTemplates={() => setShowTemplatesModal(true)}
+                    onToggleActive={handleToggleActive}
+                    onDuplicate={handleDuplicateWorkflow}
+                    onDelete={handleDeleteWorkflow}
+                  />
+                </div>
+              }
             />
-          )}
-
-          {/* 3. Executions History */}
-          {activeTab === 'executions' && (
-            <div style={{ backgroundColor: '#0a0a0a' }} className="h-full overflow-y-auto">
-              <ExecutionHistory
-                executions={executions}
-                workflows={workflows}
-                onReplayExecution={handleReplayExecution}
-              />
-            </div>
-          )}
-
-          {/* 4. Telemetry & Analytics Dashboard */}
-          {activeTab === 'analytics' && (
-            <div style={{ backgroundColor: '#0a0a0a' }} className="h-full overflow-y-auto">
-              <AnalyticsDashboard
-                workflows={workflows}
-                executions={executions}
-                onRefresh={() => setExecutions(db.getExecutions())}
-                onSelectWorkflow={(id) => {
-                  handleSelectWorkflow(id);
-                  setActiveTab('canvas');
-                }}
-              />
-            </div>
-          )}
-
-          {/* 5. Credentials Manager */}
-          {activeTab === 'credentials' && (
-            <div className="h-full overflow-y-auto">
-              <CredentialsManager
-                credentials={credentials}
-                onSaveCredential={(cred) => {
-                  db.saveCredential(cred);
-                  setCredentials(db.getCredentials());
-                }}
-                onDeleteCredential={(id) => {
-                  db.deleteCredential(id);
-                  setCredentials(db.getCredentials());
-                }}
-              />
-            </div>
-          )}
-
-          {/* 5. Webhook Simulator */}
-          {activeTab === 'webhook-tester' && (
-            <div className="h-full overflow-y-auto">
-              <WebhookTester
-                workflows={workflows}
-                webhooks={db.getWebhooks()}
-                onExecutionCreated={() => setExecutions(db.getExecutions())}
-              />
-            </div>
-          )}
-
-          {/* 6. Automated Test Suite */}
-          {activeTab === 'test-suite' && (
-            <div className="h-full overflow-y-auto">
-              <AutomatedTestSuite />
-            </div>
-          )}
+            <Route
+              path="/canvas"
+              element={
+                activeWorkflow ? (
+                  <WorkflowCanvas
+                    key={activeWorkflow.id}
+                    workflow={activeWorkflow}
+                    credentials={credentials}
+                    onSaveWorkflow={handleSaveWorkflow}
+                    onExecutionComplete={() => setExecutions(db.getExecutions())}
+                  />
+                ) : (
+                  <div className="flex-1 flex items-center justify-center text-zinc-500 h-full">
+                    Nenhum workflow selecionado
+                  </div>
+                )
+              }
+            />
+            <Route
+              path="/executions"
+              element={
+                <div style={{ backgroundColor: '#0a0a0a' }} className="h-full overflow-y-auto">
+                  <ExecutionHistory
+                    executions={executions}
+                    workflows={workflows}
+                    isLoading={isInitialLoading}
+                    onReplayExecution={handleReplayExecution}
+                  />
+                </div>
+              }
+            />
+            <Route
+              path="/analytics"
+              element={
+                <div style={{ backgroundColor: '#0a0a0a' }} className="h-full overflow-y-auto">
+                  <AnalyticsDashboard
+                    workflows={workflows}
+                    executions={executions}
+                    isLoading={isInitialLoading}
+                    onRefresh={() => setExecutions(db.getExecutions())}
+                    onSelectWorkflow={(id) => {
+                      handleSelectWorkflow(id);
+                      navigate('/canvas');
+                    }}
+                  />
+                </div>
+              }
+            />
+            <Route
+              path="/credentials"
+              element={
+                <div className="h-full overflow-y-auto">
+                  <CredentialsManager
+                    credentials={credentials}
+                    isLoading={isInitialLoading}
+                    onSaveCredential={(cred) => {
+                      db.saveCredential(cred);
+                      setCredentials(db.getCredentials());
+                    }}
+                    onDeleteCredential={(id) => {
+                      db.deleteCredential(id);
+                      setCredentials(db.getCredentials());
+                    }}
+                  />
+                </div>
+              }
+            />
+            <Route
+              path="/webhooks"
+              element={
+                <div className="h-full overflow-y-auto">
+                  <WebhookTester
+                    workflows={workflows}
+                    webhooks={db.getWebhooks()}
+                    isLoading={isInitialLoading}
+                    onExecutionCreated={() => setExecutions(db.getExecutions())}
+                  />
+                </div>
+              }
+            />
+            <Route
+              path="/tests"
+              element={
+                <div className="h-full overflow-y-auto">
+                  <AutomatedTestSuite isLoading={isInitialLoading} />
+                </div>
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         </main>
       </div>
 

@@ -23,15 +23,18 @@ import {
 import { IntegrationCredential } from '../../engine/types';
 import { encrypt, decrypt } from '../../engine/crypto';
 import { CustomSelect } from '../ui/CustomSelect';
+import { Skeleton } from '../ui/Skeleton';
 
 interface CredentialsManagerProps {
   credentials: IntegrationCredential[];
+  isLoading?: boolean;
   onSaveCredential: (credential: IntegrationCredential) => void;
   onDeleteCredential: (id: string) => void;
 }
 
 export const CredentialsManager: React.FC<CredentialsManagerProps> = ({
   credentials,
+  isLoading,
   onSaveCredential,
   onDeleteCredential,
 }) => {
@@ -171,7 +174,39 @@ export const CredentialsManager: React.FC<CredentialsManagerProps> = ({
 
       {/* Credentials List */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {credentials.map((cred) => {
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              style={{ backgroundColor: '#0a0a0a' }}
+              className="p-4 rounded-xl border border-[#171717] space-y-4 shadow-sm"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2.5">
+                  <Skeleton className="w-8 h-8 rounded-lg" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="w-32 h-4" />
+                    <Skeleton className="w-20 h-3" />
+                  </div>
+                </div>
+                <Skeleton className="w-6 h-6 rounded-md" />
+              </div>
+              <div className="p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 space-y-2">
+                <Skeleton className="w-full h-3" />
+                <Skeleton className="w-full h-3" />
+                <Skeleton className="w-full h-3" />
+              </div>
+              <div className="flex gap-1.5">
+                <Skeleton className="w-12 h-4 rounded-md" />
+                <Skeleton className="w-16 h-4 rounded-md" />
+              </div>
+              <div className="pt-3 border-t border-zinc-800 flex justify-between items-center">
+                <Skeleton className="w-24 h-3" />
+                <Skeleton className="w-24 h-8 rounded-lg" />
+              </div>
+            </div>
+          ))
+        ) : credentials.map((cred) => {
           const testRes = testResults[cred.id];
           const isTesting = testingId === cred.id;
 

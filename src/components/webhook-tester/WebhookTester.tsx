@@ -11,16 +11,19 @@ import { Workflow, CustomWebhook } from '../../engine/types';
 import { executeWorkflow } from '../../engine/engine';
 import { db } from '../../storage/db';
 import { CustomSelect } from '../ui/CustomSelect';
+import { Skeleton } from '../ui/Skeleton';
 
 interface WebhookTesterProps {
   workflows: Workflow[];
   webhooks: CustomWebhook[];
+  isLoading?: boolean;
   onExecutionCreated: () => void;
 }
 
 export const WebhookTester: React.FC<WebhookTesterProps> = ({
   workflows,
   webhooks,
+  isLoading,
   onExecutionCreated,
 }) => {
   const [selectedPath, setSelectedPath] = useState(webhooks[0]?.webhookPath || 'lead-ingest');
@@ -132,93 +135,123 @@ export const WebhookTester: React.FC<WebhookTesterProps> = ({
           style={{ backgroundColor: '#0a0a0a' }}
           className="p-5 rounded-xl border border-[#171717] space-y-4 shadow-sm"
         >
-          <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1.5">
-              Selecionar Webhook Ativo
-            </label>
-            <CustomSelect
-              value={selectedPath}
-              onChange={(val) => setSelectedPath(val)}
-              options={webhooks.map((wh) => ({
-                value: wh.webhookPath,
-                label: `/${wh.webhookPath}`,
-                description: workflows.find((w) => w.id === wh.workflowId)?.name || 'Workflow',
-                icon: Webhook,
-              }))}
-              size="sm"
-              searchable={webhooks.length > 4}
-              placeholder="Selecione um webhook..."
-            />
-          </div>
+          {isLoading ? (
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Skeleton className="w-32 h-3" />
+                <Skeleton className="w-full h-9 rounded-lg" />
+              </div>
+              <div className="p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 space-y-2">
+                <Skeleton className="w-24 h-3" />
+                <Skeleton className="w-full h-4" />
+              </div>
+              <div className="flex gap-3">
+                <div className="w-32 space-y-1.5">
+                  <Skeleton className="w-12 h-3" />
+                  <Skeleton className="w-full h-9 rounded-lg" />
+                </div>
+                <div className="flex-1 space-y-1.5">
+                  <Skeleton className="w-24 h-3" />
+                  <Skeleton className="w-full h-9 rounded-lg" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Skeleton className="w-40 h-3" />
+                <Skeleton className="w-full h-40 rounded-lg" />
+              </div>
+              <Skeleton className="w-full h-10 rounded-lg" />
+            </div>
+          ) : (
+            <>
+              <div>
+                <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+                  Selecionar Webhook Ativo
+                </label>
+                <CustomSelect
+                  value={selectedPath}
+                  onChange={(val) => setSelectedPath(val)}
+                  options={webhooks.map((wh) => ({
+                    value: wh.webhookPath,
+                    label: `/${wh.webhookPath}`,
+                    description: workflows.find((w) => w.id === wh.workflowId)?.name || 'Workflow',
+                    icon: Webhook,
+                  }))}
+                  size="sm"
+                  searchable={webhooks.length > 4}
+                  placeholder="Selecione um webhook..."
+                />
+              </div>
 
-          <div className="p-2.5 rounded-[6px] bg-zinc-950 border border-zinc-800/80 space-y-1">
-            <div className="flex items-center justify-between text-[11px] text-zinc-400">
-              <span>URL do Webhook:</span>
+              <div className="p-2.5 rounded-[6px] bg-zinc-950 border border-zinc-800/80 space-y-1">
+                <div className="flex items-center justify-between text-[11px] text-zinc-400">
+                  <span>URL do Webhook:</span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(fullWebhookUrl);
+                      setCopiedUrl(true);
+                      setTimeout(() => setCopiedUrl(false), 1500);
+                    }}
+                    className="text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                  >
+                    {copiedUrl ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                    <span>{copiedUrl ? 'Copiado!' : 'Copiar URL'}</span>
+                  </button>
+                </div>
+                <div className="font-mono text-xs text-zinc-200 break-all select-all">
+                  {fullWebhookUrl}
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <div className="w-32">
+                  <label className="block text-xs font-medium text-zinc-300 mb-1.5">Método</label>
+                  <CustomSelect
+                    value={method}
+                    onChange={(val) => setMethod(val as any)}
+                    options={[
+                      { value: 'POST', label: 'POST' },
+                      { value: 'GET', label: 'GET' },
+                    ]}
+                    size="sm"
+                  />
+                </div>
+
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+                    Segredo HMAC (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="whsec_..."
+                    value={hmacSecret}
+                    onChange={(e) => setHmacSecret(e.target.value)}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-[6px] px-3 py-1.5 text-xs text-zinc-200 font-mono focus:border-zinc-600 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+                  Corpo da Requisição (JSON Payload)
+                </label>
+                <textarea
+                  rows={9}
+                  value={payloadBody}
+                  onChange={(e) => setPayloadBody(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-[6px] p-3 text-zinc-200 font-mono text-xs focus:border-zinc-600 outline-none"
+                />
+              </div>
+
               <button
-                onClick={() => {
-                  navigator.clipboard.writeText(fullWebhookUrl);
-                  setCopiedUrl(true);
-                  setTimeout(() => setCopiedUrl(false), 1500);
-                }}
-                className="text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                onClick={handleSendWebhook}
+                disabled={isSending}
+                className="w-full py-2 px-4 rounded-[6px] bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 transition-all"
               >
-                {copiedUrl ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                <span>{copiedUrl ? 'Copiado!' : 'Copiar URL'}</span>
+                {isSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                <span>{isSending ? 'Enviando e Processando...' : 'Enviar Requisição HTTP'}</span>
               </button>
-            </div>
-            <div className="font-mono text-xs text-zinc-200 break-all select-all">
-              {fullWebhookUrl}
-            </div>
-          </div>
-
-          <div className="flex gap-3">
-            <div className="w-32">
-              <label className="block text-xs font-medium text-zinc-300 mb-1.5">Método</label>
-              <CustomSelect
-                value={method}
-                onChange={(val) => setMethod(val as any)}
-                options={[
-                  { value: 'POST', label: 'POST' },
-                  { value: 'GET', label: 'GET' },
-                ]}
-                size="sm"
-              />
-            </div>
-
-            <div className="flex-1">
-              <label className="block text-xs font-medium text-zinc-300 mb-1.5">
-                Segredo HMAC (Opcional)
-              </label>
-              <input
-                type="text"
-                placeholder="whsec_..."
-                value={hmacSecret}
-                onChange={(e) => setHmacSecret(e.target.value)}
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-[6px] px-3 py-1.5 text-xs text-zinc-200 font-mono focus:border-zinc-600 outline-none"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1.5">
-              Corpo da Requisição (JSON Payload)
-            </label>
-            <textarea
-              rows={9}
-              value={payloadBody}
-              onChange={(e) => setPayloadBody(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-[6px] p-3 text-zinc-200 font-mono text-xs focus:border-zinc-600 outline-none"
-            />
-          </div>
-
-          <button
-            onClick={handleSendWebhook}
-            disabled={isSending}
-            className="w-full py-2 px-4 rounded-[6px] bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 transition-all"
-          >
-            {isSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-            <span>{isSending ? 'Enviando e Processando...' : 'Enviar Requisição HTTP'}</span>
-          </button>
+            </>
+          )}
         </div>
 
         {/* Right Form: Response Feedback */}
@@ -228,7 +261,12 @@ export const WebhookTester: React.FC<WebhookTesterProps> = ({
         >
           <h3 className="text-xs font-semibold text-zinc-200 tracking-tight">Resultado da Recepção & Execução</h3>
 
-          {responseLog ? (
+          {isLoading ? (
+            <div className="space-y-4 flex-1 flex flex-col">
+              <Skeleton className="w-32 h-5 rounded-md" />
+              <Skeleton className="w-full flex-1 rounded-xl" />
+            </div>
+          ) : responseLog ? (
             <div className="space-y-3 flex-1 flex flex-col">
               <div className="flex items-center gap-2">
                 <span

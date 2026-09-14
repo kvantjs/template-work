@@ -19,16 +19,19 @@ import {
 import { WorkflowExecution, Workflow } from '../../engine/types';
 import { ExecutionDetailModal } from './ExecutionDetailModal';
 import { CustomSelect } from '../ui/CustomSelect';
+import { Skeleton } from '../ui/Skeleton';
 
 interface ExecutionHistoryProps {
   executions: WorkflowExecution[];
   workflows: Workflow[];
+  isLoading?: boolean;
   onReplayExecution: (execution: WorkflowExecution) => void;
 }
 
 export const ExecutionHistory: React.FC<ExecutionHistoryProps> = ({
   executions,
   workflows,
+  isLoading,
   onReplayExecution,
 }) => {
   const [selectedExecution, setSelectedExecution] = useState<WorkflowExecution | null>(null);
@@ -155,7 +158,22 @@ export const ExecutionHistory: React.FC<ExecutionHistoryProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#171717] font-sans">
-                {filteredExecutions.map((ex, index) => (
+                {isLoading ? (
+                  Array.from({ length: 8 }).map((_, i) => (
+                    <tr key={i} className="animate-pulse">
+                      <td className="py-3 px-4"><Skeleton className="w-16 h-4" /></td>
+                      <td className="py-3 px-4">
+                        <Skeleton className="w-32 h-4 mb-1" />
+                        <Skeleton className="w-20 h-2" />
+                      </td>
+                      <td className="py-3 px-4"><Skeleton className="w-12 h-4" /></td>
+                      <td className="py-3 px-4"><Skeleton className="w-16 h-4" /></td>
+                      <td className="py-3 px-4"><Skeleton className="w-12 h-4" /></td>
+                      <td className="py-3 px-4"><Skeleton className="w-24 h-4" /></td>
+                      <td className="py-3 px-4 flex justify-end gap-2 mt-2"><Skeleton className="w-16 h-6" /><Skeleton className="w-6 h-6" /></td>
+                    </tr>
+                  ))
+                ) : filteredExecutions.map((ex, index) => (
                   <tr
                     key={ex.id}
                     className="hover:bg-[#141414] transition-colors cursor-pointer group"
