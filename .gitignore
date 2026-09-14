@@ -2,6 +2,9 @@ node_modules/
 build/
 dist/
 coverage/
+public/styles.css
+.meu/
+.ryvax-cache/
 .DS_Store
 *.log
 .env*

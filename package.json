@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "css:build": "tailwindcss -i ./src/index.css -o ./public/styles.css",
+    "build": "npm run css:build && ryvax build",
+    "export": "ryvax export --out-dir dist",
     "start": "node dist/server.cjs",
     "lint": "tsc --noEmit",
     "ryvax:doctor": "ryvax doctor",
@@ -13,6 +15,7 @@
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
+    "@tailwindcss/cli": "^4.1.14",
     "@kvantjs/ryvax.js": "^2.1.3",
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^5.0.4",
